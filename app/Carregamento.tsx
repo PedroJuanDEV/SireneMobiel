@@ -1,10 +1,12 @@
-import { useNavigation } from '@react-navigation/native';
+import { useRouter } from 'expo-router'; // 🎯 Novo Import do Expo Router
 import React, { useEffect, useRef } from 'react';
 import { Animated, Dimensions, Image, StyleSheet, View } from 'react-native';
 
 const { height } = Dimensions.get('window');
 
 const primaryColor = '#550D08'; 
+// Ajustando o caminho da imagem, se necessário. Se o arquivo está em 'app/', 
+// o caminho para 'assets/images' na raiz é '..'.
 const logoSource = require('../assets/images/LogoSirene.png'); 
 
 const LoadingDots = () => {
@@ -53,7 +55,8 @@ const LoadingDots = () => {
 
 const SplashScreen = () => {
   const fadeAnim = useRef(new Animated.Value(0)).current; 
-  const navigation = useNavigation();
+  // 🎯 SUBSTITUIÇÃO: usando useRouter do Expo Router
+  const router = useRouter();
 
   useEffect(() => {
     
@@ -63,14 +66,15 @@ const SplashScreen = () => {
       useNativeDriver: true,
     }).start();
 
-    
+    // Lógica para navegação após 3 segundos (simulando o carregamento)
     const timer = setTimeout(() => {
-      navigation.replace('Login');
+      // 🎯 NAVEGAÇÃO: usando router.replace para ir para a tela 'Login'
+      router.replace('Login');
     }, 3000); 
 
-    
+    // Limpeza do timer
     return () => clearTimeout(timer);
-  }, [fadeAnim, navigation]);
+  }, [fadeAnim, router]); // Adicione 'router' como dependência para boas práticas
 
   return (
     <View style={styles.container}>
@@ -81,8 +85,6 @@ const SplashScreen = () => {
           resizeMode="contain"
         />
       </Animated.View>
-      
-      
       
       <LoadingDots />
     </View>
@@ -116,4 +118,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default SplashScreen;
+export default SplashScreen; // Certifique-se de que o nome do arquivo TSX é 'Carregamento.tsx'
