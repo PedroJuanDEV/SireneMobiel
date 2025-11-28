@@ -1,20 +1,21 @@
-import { useRouter } from 'expo-router'; // 🎯 Importando o hook de roteamento
+import { useRouter } from 'expo-router';
 import React from 'react';
 import { SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 const primaryColor = '#550D08'; 
 const cardBackgroundColor = '#FFFFFF';
 
-
 const FORMULARIOS = [
+    
     { title: 'Formulário de atendimento', subtitle: 'BÁSICO', color: '#AAAAAA', route: 'FormBasico' },
-    { title: 'Formulário de atendimento', subtitle: 'PRÉ-HOSPITALAR – CVI', color: '#1E90FF', route: 'FormPreHospitalar', nature: 'Natureza 1' },
-    { title: 'Formulário de atendimento', subtitle: 'INCÊNDIO', color: '#FF4500', route: 'FormIncendio', nature: 'Natureza 2' },
-    { title: 'Formulário de atendimento', subtitle: 'SALVAMENTO', color: '#FF8C00', route: 'FormSalvamento', nature: 'Natureza 3' },
-    { title: 'Formulário de atendimento', subtitle: 'PRODUTOS PERIGOSOS', color: '#FFD700', route: 'FormPerigosos', nature: 'Natureza 4' },
-    { title: 'Formulário de atendimento', subtitle: 'PREVENÇÃO', color: '#32CD32', route: 'FormPrevencao', nature: 'Natureza 5' },
+    { title: 'Formulário de atendimento', subtitle: 'PRÉ-HOSPITALAR – CVI', color: '#1E90FF', route: '/FormPreHospitalar/forms1', nature: 'Natureza 1' }, 
+    // CORREÇÃO: Rota absoluta iniciando em '/'
+    { title: 'Formulário de atendimento', subtitle: 'INCÊNDIO', color: '#FF4500', route: '/Incendio/forms1', nature: 'Natureza 2' },
+    // Ajustado para seguir o padrão de rotas absolutas (assumindo que as pastas serão criadas em (tabs)/)
+    { title: 'Formulário de atendimento', subtitle: 'SALVAMENTO', color: '#FF8C00', route: '/Salvamento/forms1', nature: 'Natureza 3' },
+    { title: 'Formulário de atendimento', subtitle: 'PRODUTOS PERIGOSOS', color: '#FFD700', route: '/Perigosos/forms1', nature: 'Natureza 4' },
+    { title: 'Formulário de atendimento', subtitle: 'PREVENÇÃO', color: '#32CD32', route: '/Prevencao/forms1', nature: 'Natureza 5' },
 ];
-
 
 const FormularioButton: React.FC<{ data: typeof FORMULARIOS[0]; onPress: (route: string) => void }> = ({ data, onPress }) => (
     <TouchableOpacity 
@@ -30,13 +31,16 @@ const FormularioButton: React.FC<{ data: typeof FORMULARIOS[0]; onPress: (route:
 );
 
 export default function NovoScreen() {
-   
+    
     const router = useRouter(); 
 
     const handleFormSelection = (route: string) => {
-      
-        router.push(route); 
-        console.log(`Navegar para a rota do formulário: ${route}`);
+        // A lógica de verificação já está correta, garantindo que a rota comece com '/'
+        if (route.startsWith('/')) {
+            router.push(route); 
+        } else {
+            console.warn(`Rota inválida: ${route}`);
+        }
     };
 
     return (
@@ -55,7 +59,6 @@ export default function NovoScreen() {
                     />
                 ))}
 
-                {/* Espaçamento para a Tab Bar */}
                 <View style={{ height: 100 }} /> 
             </ScrollView>
         </SafeAreaView>
