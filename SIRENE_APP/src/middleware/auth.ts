@@ -31,6 +31,9 @@ export const authenticateToken = async (
         numeroMilitar: true,
         posto: true,
         perfilAcesso: true,
+        email: true,
+        // campos opcionais do perfil que podem ser úteis
+        // (não obrigatórios na base, por isso opcionais no tipo)
       },
     });
 
@@ -47,6 +50,8 @@ export const authenticateToken = async (
       numeroMilitar: militar.numeroMilitar || '',
       posto: militar.posto || '',
       perfilAcesso: militar.perfilAcesso as PerfilAcesso || PerfilAcesso.MILITAR,
+      email: (militar as any).email || undefined,
+      // telefone/viatura: não mapeados no schema atual
     };
 
     next();

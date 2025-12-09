@@ -157,11 +157,11 @@ model FormularioBasico {
   referencia            String?
   solicitanteNome       String?
   solicitanteTelefone   String?
-  deslocamento          Json?      // Para armazenar horários de saída, chegada, etc.
+  deslocamento          Json?      
   viaturaLocal          String?
   placaViaturaLocal     String?
   apoio                 String?
-  viaturasEnvolvidas    Json?      // Para armazenar múltiplas viaturas
+  viaturasEnvolvidas    Json?     
   historico             String?
   continuacao           Boolean?
   dificuldadesAtuacao   String?
@@ -184,6 +184,48 @@ model FormularioBasico {
 model FormularioPreHospital {
   id           String   @id @default(auto()) @map("_id") @db.ObjectId
   idOcorrencia String?  @db.ObjectId
+  // Campos explícitos extraídos do frontend (forms1..5)
+  pontoBase        String?
+  ome              String?
+  viaturaDestino   String?
+  numeroAviso      String?
+  latitude         String?
+  longitude        String?
+  elevacao         String?
+  numeroGps        String?
+  areaCBM          String?
+  areaCBM_vazio    String?
+  motivoAreaVazio  String?
+  fotos            Json?
+  videos           Json?
+
+  // Identificação e horários
+  assinaturaDigital String?
+  idade             Int?
+  sexo              String?
+  documentoPessoa   String?
+  tipoAcidente      String?
+  tempoCenaMin      Int?
+  atrasoInternoMin  Int?
+  horarioSaida      String?
+  horarioNoLocal    String?
+  horarioChegadaHosp String?
+  horarioFinalizacao String?
+  ctfLocal          String?
+  ctfVtrLocal       String?
+  numeroDespachante String?
+
+  // Vítimas / evento
+  atendimentoDescricao String?
+  eventoNatureza       String?
+  tipoVitima           String?
+  gravidadeVitima      String?
+  prioridadeVitima     String?
+
+  // Veículos / guarnição
+  veiculos            Json?
+  guarnicao           Json?
+
   dados        Json?
   criadoEm     DateTime @default(now()) @map("criado_em")
   atualizadoEm DateTime? @map("atualizado_em")
@@ -196,6 +238,23 @@ model FormularioPreHospital {
 model FormularioIncendio {
   id           String   @id @default(auto()) @map("_id") @db.ObjectId
   idOcorrencia String?  @db.ObjectId
+  // Campos explícitos do fluxo Incêndio
+  localIncendio      String?
+  enderecoComplemento String?
+  tipoIncendio       String?
+  houveDanos         String?
+  numeroVitimas      Int?
+  materialCombustao  String?
+  areaAtingidaM2     Int?
+  latitude           String?
+  longitude          String?
+  tipoAgua           String?
+  resgateVitimas     String?
+  tempoCombateMin    Int?
+  aguaUtilizadaLitros Int?
+  fotos              Json?
+  videos             Json?
+
   dados        Json?
   criadoEm     DateTime @default(now()) @map("criado_em")
   atualizadoEm DateTime? @map("atualizado_em")
@@ -208,6 +267,27 @@ model FormularioIncendio {
 model FormularioSalvamento {
   id           String   @id @default(auto()) @map("_id") @db.ObjectId
   idOcorrencia String?  @db.ObjectId
+  // Campos explícitos do fluxo Salvamento
+  pontoBase        String?
+  qgObm            String?
+  tipoVtr          String?
+  numeroAviso      String?
+  diaHora          String?
+  logradouro       String?
+  numeroLogradouro String?
+  bairro           String?
+  municipioUf      String?
+  latitude         String?
+  longitude        String?
+  areaOBM          String?
+  codigoLocal      String?
+  fotos            Json?
+  videos           Json?
+  descricaoAtendimento String?
+  observacoes      String?
+  veiculos         Json?
+  guarnicao        Json?
+
   dados        Json?
   criadoEm     DateTime @default(now()) @map("criado_em")
   atualizadoEm DateTime? @map("atualizado_em")
@@ -220,10 +300,55 @@ model FormularioSalvamento {
 model FormularioProdutosPerigosos {
   id           String   @id @default(auto()) @map("_id") @db.ObjectId
   idOcorrencia String?  @db.ObjectId
+  // Campos explícitos para Produtos Perigosos
+  pontoBase        String?
+  cme              String?
+  tipoVtr          String?
+  numeroAviso      String?
+  diaHora          String?
+  descricaoRisco   String?
+  material         String?
+  quantidade       String?
+  riscoPrincipal   String?
+  medidasAdotadas  String?
+  fotos            Json?
+  videos           Json?
+
   dados        Json?
   criadoEm     DateTime @default(now()) @map("criado_em")
   atualizadoEm DateTime? @map("atualizado_em")
 
   // relação mantida pelo id (idOcorrencia) sem constraint Prisma
   @@map("FormularioProdutosPerigosos")
+}
+
+// 6) PREVENÇÃO
+model FormularioPrevencao {
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  idOcorrencia String?  @db.ObjectId
+
+  // Campos do fluxo Prevencao (forms1..5)
+  pontoBase        String?
+  cme              String?
+  tipoVtr          String?
+  numeroAviso      String?
+  diaHora          String?
+  formaAcionamento String?
+  situacaoOcorrencia String?
+  localAcionamento  String?
+  logradouro       String?
+  numeroLogradouro String?
+  bairro           String?
+  municipioUf      String?
+  latitude         String?
+  longitude        String?
+  fotos            Json?
+  videos           Json?
+  observacoes      String?
+
+  dados        Json?
+  criadoEm     DateTime @default(now()) @map("criado_em")
+  atualizadoEm DateTime? @map("atualizado_em")
+
+  @@map("FormularioPrevencao")
 }

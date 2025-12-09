@@ -33,6 +33,7 @@ export default function PerfilScreen() {
     const router = useRouter();
     const [loading, setLoading] = useState(true);
     const [profile, setProfile] = useState<any>(null);
+    const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
     const handleLogout = async () => {
         try {
@@ -52,7 +53,6 @@ export default function PerfilScreen() {
                     router.replace('/(auth)/Login');
                     return;
                 }
-
                 const res = await fetch(`${API_BASE_URL}/auth/me`, {
                     method: 'GET',
                     headers: {
@@ -64,10 +64,9 @@ export default function PerfilScreen() {
                 if (!mounted) return;
 
                 if (!res.ok) {
-                    // token inválido ou outro erro
                     const text = await res.text();
                     console.warn('auth/me erro:', res.status, text);
-                    Alert.alert('Erro', 'Não foi possível carregar seu perfil. Faça login novamente.');
+                    setErrorMsg('Não foi possível carregar seu perfil. Faça login novamente.');
                     await SecureStore.deleteItemAsync('token');
                     router.replace('/(auth)/Login');
                     return;
@@ -75,9 +74,14 @@ export default function PerfilScreen() {
 
                 const data = await res.json();
                 if (!mounted) return;
-                setProfile(data?.data || data || null);
+                const user = data?.data || data || null;
+                console.log('GET /auth/me response:', data);
+                console.log('Resolved user object:', user);
+                setProfile(user);
+                setErrorMsg(null);
             } catch (error) {
                 console.warn('Erro ao obter perfil', error);
+                setErrorMsg('Erro ao carregar perfil. Verifique sua conexão.');
                 Alert.alert('Erro', 'Erro ao carregar perfil. Verifique sua conexão.');
             } finally {
                 if (mounted) setLoading(false);
@@ -88,6 +92,23 @@ export default function PerfilScreen() {
 
         return () => { mounted = false; };
     }, []);
+
+    // Busca recursiva por chave dentro de um objeto (retorna o primeiro valor truthy encontrado)
+    const findNestedKey = (obj: any, key: string): any => {
+        if (!obj || typeof obj !== 'object') return null;
+        if (Object.prototype.hasOwnProperty.call(obj, key) && obj[key]) return obj[key];
+        for (const k of Object.keys(obj)) {
+            const val = obj[k];
+            if (val && typeof val === 'object') {
+                const found = findNestedKey(val, key);
+                if (found) return found;
+            }
+        }
+        return null;
+    };
+
+    const resolvedEmail = findNestedKey(profile, 'email') || '';
+    const resolvedTelefone = findNestedKey(profile, 'telefone') || findNestedKey(profile, 'phone') || '';
 
     return (
         <SafeAreaView style={styles.safeArea}>
@@ -110,20 +131,31 @@ export default function PerfilScreen() {
                     ) : (
                         <>
                             <Text style={styles.userName}>{profile?.nome || profile?.name || 'Usuário'}</Text>
-                            <Text style={styles.userRole}>{profile?.funcao || profile?.role || ''}</Text>
+                            {resolvedEmail ? <Text style={styles.userEmail}>{resolvedEmail}</Text> : null}
+                            <Text style={styles.userRole}>{profile?.posto || profile?.funcao || profile?.role || ''}</Text>
                         </>
                     )}
                 </View>
 
                 
                 <InfoCard title="Informações da conta">
-                    <InfoItem label="E-mail" value={profile?.email || profile?.username || ''} />
-                    <InfoItem label="Número de contato" value={profile?.telefone || profile?.phone || ''} />
-                    <InfoItem label="Função" value={profile?.funcao || profile?.role || ''} />
+                    {/* Tenta várias chaves possíveis para acomodar diferentes formas de resposta do backend */}
+                    {(() => {
+                        const email = profile?.email || profile?.militar?.email || profile?.user?.email || profile?.contato?.email || '';
+                        const telefone = profile?.telefone || profile?.militar?.telefone || profile?.phone || profile?.contato?.telefone || '';
+                        return (
+                            <>
+                                <InfoItem label="E-mail" value={email && email !== '' ? email : 'Não informado'} />
+                                <InfoItem label="Número de contato" value={telefone && telefone !== '' ? telefone : 'Não informado'} />
+                                <InfoItem label="Função" value={profile?.posto || profile?.funcao || profile?.role || 'Não informado'} />
+                            </>
+                        );
+                    })()}
                 </InfoCard>
 
                 <InfoCard title="Informações operacionais">
                     <InfoItem label="Matrícula" value={profile?.matricula?.toString?.() || ''} />
+                    <InfoItem label="Número Militar" value={profile?.numeroMilitar || ''} />
                     <InfoItem label="Viatura" value={profile?.viatura || ''} />
                     <InfoItem label="Turno" value={profile?.turno || ''} />
                 </InfoCard>
@@ -134,7 +166,10 @@ export default function PerfilScreen() {
                     <Text style={styles.logoutButtonText}>Sair</Text>
                 </TouchableOpacity>
 
+                
+
                 <View style={{ height: 90 }} /> 
+                
             </ScrollView>
         </SafeAreaView>
     );

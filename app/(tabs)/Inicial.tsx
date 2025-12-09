@@ -48,6 +48,10 @@ const ActivityItem: React.FC<{ type: 'atribuida' | 'concluida' | 'andamento'; te
 
 export default function InicialScreen() {
   const [ocorrencias, setOcorrencias] = useState<any[]>([]);
+  const [totalOcorrencias, setTotalOcorrencias] = useState<number | null>(null);
+  const [emAndamentoCount, setEmAndamentoCount] = useState<number | null>(null);
+  const [tempoMedioResposta, setTempoMedioResposta] = useState<string | null>(null);
+  const [taxaConclusao, setTaxaConclusao] = useState<string | null>(null);
   const [registros, setRegistros] = useState<any[]>([]);
   const [loadingOcorrencias, setLoadingOcorrencias] = useState(false);
   const [loadingRegistros, setLoadingRegistros] = useState(false);
@@ -65,6 +69,39 @@ export default function InicialScreen() {
       const data = await res.json();
       const list = Array.isArray(data) ? data : data?.data ?? [];
       setOcorrencias(list.slice(0, 6));
+
+      // Calcular métricas para os cards
+      try {
+        const total = list.length;
+        const concluidas = list.filter((o: any) => o.status === 'CONCLUIDA').length;
+        const emAndamento = list.filter((o: any) => o.status && o.status !== 'CONCLUIDA' && o.status !== 'CANCELADA').length;
+
+        // Tempo médio de resposta: diferença entre dataHora da ocorrência e primeiro registro (dataRegistro)
+        let somaMinutos = 0;
+        let contadorTempos = 0;
+        list.forEach((o: any) => {
+          const dataHora = o.dataHora ? new Date(o.dataHora) : null;
+          const primeiroRegistro = Array.isArray(o.registrosOcorrencia) && o.registrosOcorrencia.length > 0 ? o.registrosOcorrencia[0] : null;
+          const dataRegistro = primeiroRegistro && primeiroRegistro.dataRegistro ? new Date(primeiroRegistro.dataRegistro) : null;
+          if (dataHora && dataRegistro) {
+            const diffMin = Math.max(0, Math.floor((dataRegistro.getTime() - dataHora.getTime()) / 60000));
+            somaMinutos += diffMin;
+            contadorTempos += 1;
+          }
+        });
+
+        const mediaMinutos = contadorTempos > 0 ? Math.round(somaMinutos / contadorTempos) : 0;
+        const tempoMedioFormatado = mediaMinutos >= 60 ? `${Math.round(mediaMinutos / 60)}h ${mediaMinutos % 60}m` : `${mediaMinutos}m`;
+
+        const taxa = total > 0 ? Math.round((concluidas / total) * 100) : 0;
+
+        setTotalOcorrencias(total);
+        setEmAndamentoCount(emAndamento);
+        setTempoMedioResposta(contadorTempos > 0 ? tempoMedioFormatado : '—');
+        setTaxaConclusao(`${taxa}%`);
+      } catch (err) {
+        console.warn('Erro ao calcular métricas:', err);
+      }
     } catch (err) {
       console.error('Erro ao buscar ocorrencias:', err);
     } finally {
@@ -112,12 +149,12 @@ export default function InicialScreen() {
 
         {/* --- Cards de Estatísticas --- */}
         <View style={styles.statsRow}>
-          <StatCard title="Total de ocorrências" value="08" />
-          <StatCard title="Em andamento" value="2" />
+          <StatCard title="Total de ocorrências" value={totalOcorrencias !== null ? String(totalOcorrencias).padStart(2, '0') : '—'} />
+          <StatCard title="Em andamento" value={emAndamentoCount !== null ? String(emAndamentoCount) : '—'} />
         </View>
         <View style={styles.statsRow}>
-          <StatCard title="Tempo médio resposta" value="10min" />
-          <StatCard title="Taxa de conclusão" value="90%" />
+          <StatCard title="Tempo médio resposta" value={tempoMedioResposta ?? '—'} />
+          <StatCard title="Taxa de conclusão" value={taxaConclusao ?? '—'} />
         </View>
 
         {/* --- Atividades Recentes --- */}

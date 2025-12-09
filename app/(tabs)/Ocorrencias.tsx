@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Picker } from '@react-native-picker/picker';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
     Dimensions,
     SafeAreaView,
@@ -10,84 +10,135 @@ import {
     TextInput,
     TouchableOpacity,
     View,
+    ActivityIndicator,
 } from 'react-native';
+import { API_BASE_URL } from '../../src/api/config';
+import { getOcorrencias, getOcorrenciaById, updateOcorrencia } from '../../src/api/ocorrencia';
 
 const primaryColor = '#550D08';
 const cardBackgroundColor = '#FFFFFF';
 const inputBorderColor = '#CCCCCC';
 const screenHeight = Dimensions.get('window').height;
-const ViewOccurrenceModal: React.FC<{ onClose: () => void }> = ({ onClose }) => (
+const ViewOccurrenceModal: React.FC<{ onClose: () => void; ocorrencia: any | null }> = ({ onClose, ocorrencia }) => (
     <View style={styles.modalContent}>
         <Text style={styles.modalTitle}>Visualizar ocorrência</Text>
-        
-        <View style={styles.inputRow}>
-            <View style={styles.inputGroupLogradouro}>
-                {/* Visualizar: INPUTS EM ESTILO READ-ONLY */}
-                <TextInput style={styles.modalInputVisualizar} placeholder="Logradouro" value="Rua das Flores, 123" editable={false} />
-            </View>
-            <View style={styles.inputGroupNumero}>
-                <TextInput style={styles.modalInputVisualizar} placeholder="Nº" value="45" editable={false} />
-            </View>
-        </View>
-        
-        <View style={styles.inputRow}>
-            <View style={styles.inputGroupHalf}>
-                <TextInput style={styles.modalInputVisualizar} placeholder="Bairro" value="Centro" editable={false} />
-            </View>
-            <View style={styles.inputGroupHalf}>
-                <TextInput style={styles.modalInputVisualizar} placeholder="Município/UF" value="Recife/PE" editable={false} />
-            </View>
-        </View>
-        
-        <View style={styles.modalButtonRow}>
-            {/* O modal de visualização só precisa de um botão "Cancelar" (ou "Fechar") */}
-            <TouchableOpacity style={styles.modalSaveButton} onPress={onClose}>
-                <Text style={styles.modalSaveButtonText}>Fechar</Text>
-            </TouchableOpacity>
-        </View>
+        {ocorrencia ? (
+            <>
+                <View style={{ marginBottom: 8 }}>
+                    <Text style={{ fontWeight: '700', color: primaryColor }}>{ocorrencia.tipoOcorrencia || ocorrencia.tipo || 'Ocorrência'}</Text>
+                    <Text style={{ color: '#333', marginTop: 4 }}>{ocorrencia.descricao || ocorrencia.endereco || ''}</Text>
+                    <Text style={{ color: '#AAA', marginTop: 6 }}>{ocorrencia.dataHora ? new Date(ocorrencia.dataHora).toLocaleString() : ''}</Text>
+                </View>
+
+                <View style={styles.inputRow}>
+                    <View style={styles.inputGroupLogradouro}>
+                        <TextInput style={styles.modalInputVisualizar} placeholder="Logradouro" value={ocorrencia.endereco || ''} editable={false} />
+                    </View>
+                    <View style={styles.inputGroupNumero}>
+                        <TextInput style={styles.modalInputVisualizar} placeholder="Nº" value={ocorrencia.numero || ''} editable={false} />
+                    </View>
+                </View>
+
+                <View style={styles.inputRow}>
+                    <View style={styles.inputGroupHalf}>
+                        <TextInput style={styles.modalInputVisualizar} placeholder="Bairro" value={ocorrencia.bairro || ''} editable={false} />
+                    </View>
+                    <View style={styles.inputGroupHalf}>
+                        <TextInput style={styles.modalInputVisualizar} placeholder="Município/UF" value={ocorrencia.cidade || ''} editable={false} />
+                    </View>
+                </View>
+
+                <View style={styles.modalButtonRow}>
+                    <TouchableOpacity style={styles.modalSaveButton} onPress={onClose}>
+                        <Text style={styles.modalSaveButtonText}>Fechar</Text>
+                    </TouchableOpacity>
+                </View>
+            </>
+        ) : (
+            <Text>Carregando...</Text>
+        )}
     </View>
 );
 
 // 2. MODAL DE EDIÇÃO (EDITÁVEL, COM BOTÃO SALVAR)
-const EditOccurrenceModal: React.FC<{ onClose: () => void }> = ({ onClose }) => (
-    <View style={styles.modalContent}>
-        <Text style={styles.modalTitle}>Editar ocorrência</Text>
-        
-        <View style={styles.inputRow}>
-            <View style={styles.inputGroupLogradouro}>
-                <TextInput style={styles.modalInput} placeholder="Logradouro" />
+const EditOccurrenceModal: React.FC<{ onClose: () => void; ocorrencia: any | null; onSave: (payload: any) => Promise<void>; loading?: boolean }> = ({ onClose, ocorrencia, onSave, loading }) => {
+    const [endereco, setEndereco] = useState(ocorrencia?.endereco || '');
+    const [numero, setNumero] = useState(ocorrencia?.numero || '');
+    const [bairro, setBairro] = useState(ocorrencia?.bairro || '');
+    const [cidade, setCidade] = useState(ocorrencia?.cidade || '');
+    const [descricao, setDescricao] = useState(ocorrencia?.descricao || '');
+
+    React.useEffect(() => {
+        setEndereco(ocorrencia?.endereco || '');
+        setNumero(ocorrencia?.numero || '');
+        setBairro(ocorrencia?.bairro || '');
+        setCidade(ocorrencia?.cidade || '');
+        setDescricao(ocorrencia?.descricao || '');
+    }, [ocorrencia]);
+
+    return (
+        <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Editar ocorrência</Text>
+
+            <View style={styles.inputRow}>
+                <View style={styles.inputGroupLogradouro}>
+                    <TextInput style={styles.modalInput} placeholder="Logradouro" value={endereco} onChangeText={setEndereco} />
+                </View>
+                <View style={styles.inputGroupNumero}>
+                    <TextInput style={styles.modalInput} placeholder="Nº" keyboardType="numeric" value={numero} onChangeText={setNumero} />
+                </View>
             </View>
-            <View style={styles.inputGroupNumero}>
-                <TextInput style={styles.modalInput} placeholder="Nº" keyboardType="numeric" />
+
+            <View style={styles.inputRow}>
+                <View style={styles.inputGroupHalf}>
+                    <TextInput style={styles.modalInput} placeholder="Bairro" value={bairro} onChangeText={setBairro} />
+                </View>
+                <View style={styles.inputGroupHalf}>
+                    <TextInput style={styles.modalInput} placeholder="Município/UF" value={cidade} onChangeText={setCidade} />
+                </View>
+            </View>
+
+            <TextInput style={[styles.modalInput, { marginTop: 12 }]} placeholder="Descrição" value={descricao} onChangeText={setDescricao} multiline />
+
+            <View style={styles.modalButtonRow}>
+                <TouchableOpacity style={styles.modalCancelButton} onPress={onClose}>
+                    <Text style={styles.modalCancelButtonText}>Cancelar</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                    style={styles.modalSaveButton}
+                    onPress={async () => {
+                        if (!ocorrencia) return;
+                        const payload: any = {
+                            endereco,
+                            numero,
+                            bairro,
+                            cidade,
+                            descricao,
+                        };
+                        await onSave(payload);
+                    }}
+                    disabled={loading}
+                >
+                    {loading ? <ActivityIndicator color="#fff" /> : <Text style={styles.modalSaveButtonText}>Salvar</Text>}
+                </TouchableOpacity>
             </View>
         </View>
-        
-        <View style={styles.inputRow}>
-            <View style={styles.inputGroupHalf}>
-                <TextInput style={styles.modalInput} placeholder="Bairro" />
-            </View>
-            <View style={styles.inputGroupHalf}>
-                <TextInput style={styles.modalInput} placeholder="Município/UF" />
-            </View>
-        </View>
-        
-        <View style={styles.modalButtonRow}>
-            <TouchableOpacity style={styles.modalCancelButton} onPress={onClose}>
-                <Text style={styles.modalCancelButtonText}>Cancelar</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.modalSaveButton} onPress={() => { console.log('Salvar Edição'); onClose(); }}>
-                <Text style={styles.modalSaveButtonText}>Salvar</Text>
-            </TouchableOpacity>
-        </View>
-    </View>
-);
+    );
+};
 
 
-// 3. MODAL DE DELETAR (SEM ALTERAÇÃO)
-const DeleteOccurrenceModal: React.FC<{ onClose: () => void }> = ({ onClose }) => (
+// 3. MODAL DE DELETAR (soft cancel usando status)
+const DeleteOccurrenceModal: React.FC<{ onClose: () => void; ocorrencia: any | null; onConfirm: () => Promise<void>; loading?: boolean }> = ({ onClose, ocorrencia, onConfirm, loading }) => (
     <View style={styles.modalContent}>
-        <Text style={styles.modalTitle}>Deletar ocorrência</Text>
-        <Text style={styles.deleteText}>Tem certeza que deseja excluir esta ocorrência?</Text>
+        <Text style={styles.modalTitle}>Cancelar ocorrência</Text>
+        <Text style={styles.deleteText}>Tem certeza que deseja cancelar esta ocorrência?</Text>
+
+        {ocorrencia && (
+            <View style={{ marginBottom: 8 }}>
+                <Text style={{ fontWeight: '700', color: primaryColor }}>{ocorrencia.tipoOcorrencia || ocorrencia.tipo}</Text>
+                <Text style={{ color: '#333', marginTop: 4 }}>{ocorrencia.descricao || ''}</Text>
+            </View>
+        )}
 
         <View style={styles.modalButtonRow}>
             <TouchableOpacity style={styles.modalCancelButton} onPress={onClose}>
@@ -95,9 +146,10 @@ const DeleteOccurrenceModal: React.FC<{ onClose: () => void }> = ({ onClose }) =
             </TouchableOpacity>
             <TouchableOpacity 
                 style={styles.modalDeleteButton} 
-                onPress={() => { console.log('Excluir'); onClose(); }}
+                onPress={async () => { await onConfirm(); }}
+                disabled={loading}
             >
-                <Text style={styles.modalSaveButtonText}>Excluir</Text>
+                {loading ? <ActivityIndicator color="#fff" /> : <Text style={styles.modalSaveButtonText}>Confirmar</Text>}
             </TouchableOpacity>
         </View>
     </View>
@@ -149,7 +201,12 @@ export default function OcorrenciasScreen() {
     // Tipos de modal: view, edit, delete
     const [modalType, setModalType] = useState<'view' | 'edit' | 'delete' | null>(null);
 
-    const showModal = (type: 'view' | 'edit' | 'delete') => {
+    // Ocorrência selecionada para visualizar/editar/deletar
+    const [selectedOcorrencia, setSelectedOcorrencia] = useState<any | null>(null);
+    const [modalLoading, setModalLoading] = useState(false);
+
+    const showModal = (type: 'view' | 'edit' | 'delete', ocorrencia?: any | null) => {
+        setSelectedOcorrencia(ocorrencia ?? null);
         setModalType(type);
         setIsModalVisible(true);
     };
@@ -157,14 +214,60 @@ export default function OcorrenciasScreen() {
     const closeModal = () => {
         setIsModalVisible(false);
         setModalType(null);
+        setSelectedOcorrencia(null);
+        setModalLoading(false);
     };
 
-    const ocorrencias = [
-        { id: 1, tipo: 'Acidente', data: '14/11/2025', viatura: 'VTR-1234', equipe: 'Beta' },
-        { id: 2, tipo: 'Acidente', data: '14/11/2025', viatura: 'VTR-1234', equipe: 'Beta' },
-        { id: 3, tipo: 'Acidente', data: '14/11/2025', viatura: 'VTR-1234', equipe: 'Beta' },
-        { id: 4, tipo: 'Acidente', data: '14/11/2025', viatura: 'VTR-1234', equipe: 'Beta' },
-    ];
+    const handleSave = async (payload: any) => {
+        if (!selectedOcorrencia) return;
+        setModalLoading(true);
+        try {
+            await updateOcorrencia(selectedOcorrencia.id, payload);
+            await fetchOcorrencias();
+            closeModal();
+        } catch (err) {
+            console.error('Erro ao salvar ocorrência:', err);
+        } finally {
+            setModalLoading(false);
+        }
+    };
+
+    const handleConfirmDelete = async () => {
+        if (!selectedOcorrencia) return;
+        setModalLoading(true);
+        try {
+            // Soft-cancel: marcar status como CANCELADA (ajuste se servidor usar outro valor)
+            await updateOcorrencia(selectedOcorrencia.id, { status: 'CANCELADA' });
+            await fetchOcorrencias();
+            closeModal();
+        } catch (err) {
+            console.error('Erro ao cancelar ocorrência:', err);
+        } finally {
+            setModalLoading(false);
+        }
+    };
+
+    const [ocorrencias, setOcorrencias] = useState<any[]>([]);
+    const [loading, setLoading] = useState(false);
+
+    useEffect(() => {
+        fetchOcorrencias();
+    }, []);
+
+    const fetchOcorrencias = async () => {
+        setLoading(true);
+        try {
+            const res = await fetch(`${API_BASE_URL}/ocorrencia`);
+            if (!res.ok) throw new Error(`Status ${res.status}`);
+            const data = await res.json();
+            const list = Array.isArray(data) ? data : data?.data ?? [];
+            setOcorrencias(list);
+        } catch (err) {
+            console.error('Erro ao buscar ocorrências:', err);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     return (
         <SafeAreaView style={styles.safeArea}>
@@ -199,27 +302,33 @@ export default function OcorrenciasScreen() {
             </View>
 
             <ScrollView contentContainerStyle={styles.scrollViewContent}>
-                {ocorrencias.map(ocorrencia => (
-                    <OcorrenciaCard 
-                        key={ocorrencia.id}
-                        tipo={ocorrencia.tipo}
-                        data={ocorrencia.data}
-                        viatura={ocorrencia.viatura}
-                        equipe={ocorrencia.equipe}
-                        onView={() => showModal('view')} // OLHO -> VISUALIZAR
-                        onEdit={() => showModal('edit')} // LÁPIS -> EDITAR
-                        onDelete={() => showModal('delete')}
-                    />
-                ))}
+                {loading ? (
+                    <ActivityIndicator style={{ padding: 20 }} />
+                ) : ocorrencias.length === 0 ? (
+                    <Text style={{ padding: 12, color: '#666' }}>Nenhuma ocorrência encontrada</Text>
+                ) : (
+                    ocorrencias.map((ocorrencia: any) => (
+                        <OcorrenciaCard 
+                            key={ocorrencia.id}
+                            tipo={ocorrencia.tipoOcorrencia || ocorrencia.tipo || 'Ocorrência'}
+                            data={ocorrencia.dataHora ? new Date(ocorrencia.dataHora).toLocaleString() : (ocorrencia.data || '')}
+                            viatura={(ocorrencia.registrosOcorrencia && ocorrencia.registrosOcorrencia[0]?.viatura) || ocorrencia.viatura || '-'}
+                            equipe={ocorrencia.criadoPor || '-'}
+                            onView={() => showModal('view', ocorrencia)} // OLHO -> VISUALIZAR
+                            onEdit={() => showModal('edit', ocorrencia)} // LÁPIS -> EDITAR
+                            onDelete={() => showModal('delete', ocorrencia)}
+                        />
+                    ))
+                )}
 
                 <View style={{ height: 100 }} />
             </ScrollView>
 
             {isModalVisible && (
                 <View style={styles.modalOverlay}>
-                    {modalType === 'view' && <ViewOccurrenceModal onClose={closeModal} />}
-                    {modalType === 'edit' && <EditOccurrenceModal onClose={closeModal} />}
-                    {modalType === 'delete' && <DeleteOccurrenceModal onClose={closeModal} />}
+                    {modalType === 'view' && <ViewOccurrenceModal onClose={closeModal} ocorrencia={selectedOcorrencia} />}
+                    {modalType === 'edit' && <EditOccurrenceModal onClose={closeModal} ocorrencia={selectedOcorrencia} onSave={handleSave} loading={modalLoading} />}
+                    {modalType === 'delete' && <DeleteOccurrenceModal onClose={closeModal} ocorrencia={selectedOcorrencia} onConfirm={handleConfirmDelete} loading={modalLoading} />}
                 </View>
             )}
         </SafeAreaView>

@@ -10,6 +10,11 @@ export interface AuthRequest extends Request {
     numeroMilitar: string;
     posto: string;
     perfilAcesso: PerfilAcesso;
+    // Campos opcionais extras que o frontend pode esperar
+    email?: string;
+    telefone?: string;
+    viatura?: string;
+    turno?: string;
   };
 }
 

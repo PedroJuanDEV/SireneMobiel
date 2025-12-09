@@ -4,7 +4,23 @@ const prisma = new PrismaClient();
 
 export class FormularioIncendioService {
   static async criarFormulario(data: any) {
-    return prisma.formularioIncendio.create({ data });
+    const payload = { ...data, ...(data.dados || {}) };
+    delete payload.dados;
+    const allowed = new Set([
+      'idOcorrencia', 'localIncendio', 'enderecoComplemento', 'tipoIncendio', 'houveDanos', 'numeroVitimas', 'materialCombustao',
+      'areaAtingidaM2', 'latitude', 'longitude', 'tipoAgua', 'resgateVitimas', 'tempoCombateMin', 'aguaUtilizadaLitros', 'fotos', 'videos',
+      'dados', 'criadoEm', 'atualizadoEm'
+    ]);
+    const dataToSave: any = {};
+    Object.keys(payload).forEach((k) => { if (allowed.has(k)) dataToSave[k] = (payload as any)[k]; });
+    try {
+      return await prisma.formularioIncendio.create({ data: dataToSave });
+    } catch (err: any) {
+      console.error('Erro criando FormularioIncendio. payload keys:', Object.keys(payload));
+      console.error('Filtered keys:', Object.keys(dataToSave));
+      console.error(err);
+      throw err;
+    }
   }
 
   static async listarFormularios() {
@@ -16,7 +32,23 @@ export class FormularioIncendioService {
   }
 
   static async atualizarFormulario(id: string, data: any) {
-    return prisma.formularioIncendio.update({ where: { id }, data });
+    const payload = { ...data, ...(data.dados || {}) };
+    delete payload.dados;
+    const allowed = new Set([
+      'idOcorrencia', 'localIncendio', 'enderecoComplemento', 'tipoIncendio', 'houveDanos', 'numeroVitimas', 'materialCombustao',
+      'areaAtingidaM2', 'latitude', 'longitude', 'tipoAgua', 'resgateVitimas', 'tempoCombateMin', 'aguaUtilizadaLitros', 'fotos', 'videos',
+      'dados', 'criadoEm', 'atualizadoEm'
+    ]);
+    const dataToSave: any = {};
+    Object.keys(payload).forEach((k) => { if (allowed.has(k)) dataToSave[k] = (payload as any)[k]; });
+    try {
+      return await prisma.formularioIncendio.update({ where: { id }, data: dataToSave });
+    } catch (err: any) {
+      console.error('Erro atualizando FormularioIncendio. payload keys:', Object.keys(payload));
+      console.error('Filtered keys:', Object.keys(dataToSave));
+      console.error(err);
+      throw err;
+    }
   }
 
   static async removerFormulario(id: string) {
