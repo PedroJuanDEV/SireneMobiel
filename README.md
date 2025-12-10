@@ -1,50 +1,79 @@
-# Welcome to your Expo app 👋
+# 🚨 SIRENE
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+> Projeto Integrador desenvolvido para o Corpo de Bombeiros Militar de Pernambuco (CBMPE) no curso de Análise e Desenvolvimento de Sistemas da Faculdade Senac Pernambuco.
 
-## Get started
+##  Sobre o Projeto
 
-1. Install dependencies
+O **SIRENE** é uma solução tecnológica desenvolvida para modernizar o processo de registro de ocorrências do CBMPE. O sistema substitui o modelo manual e fragmentado atual por um aplicativo mobile multiplataforma (Android, iOS, PWA) e um painel web administrativo.
 
-   ```bash
-   npm install
-   ```
+O principal objetivo é padronizar a coleta de dados em campo, garantindo agilidade e segurança, mesmo em locais sem conexão com a internet (Modo Offline).
 
-2. Start the app
 
-   ```bash
-   npx expo start
-   ```
+## 📱 Funcionalidades (App Mobile)
 
-In the output, you'll find options to open the app in a
+O aplicativo de campo foi projetado com foco na usabilidade para os operadores (Tenentes e Soldados):
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+* **Autenticação Segura:** Login com credenciais institucionais e perfis de acesso (Operador, Chefe, Admin).
+* **Registro de Ocorrências:** Formulário padronizado com validação de campos obrigatórios.
+* **Modo Offline:** Armazenamento local (cache) e fila de sincronização automática.
+* **Geolocalização:** Captura automática de coordenadas GPS e carimbo de data/hora.
+* **Evidências Multimídia:** Captura e compressão de fotos e vídeos diretamente no app.
+* **Assinatura Digital:** Coleta de assinatura dos envolvidos na tela do dispositivo.
+* **Minhas Ocorrências:** Histórico de registros do usuário com status de sincronização.
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+## 🛠️ Arquitetura e Tecnologias
 
-## Get a fresh project
+O projeto utiliza uma **Arquitetura Não Monolítica** baseada em serviços para garantir escalabilidade:
 
-When you're ready, run:
+### Front-end (Mobile & Web)
+* **Framework:** React
+* **Build Tool:** Vite
+* **Linguagem:** JavaScript/TypeScript
 
-```bash
-npm run reset-project
-```
+### Back-end (API & Serviços)
+* **Runtime:** Node.js
+* **Framework:** Express
+* **Linguagem:** TypeScript
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
 
-## Learn more
+## 👥 Equipe de Desenvolvimento
 
-To learn more about developing your project with Expo, look at the following resources:
+| Papel | Responsável |
+| :--- | :--- |
+| **Gestor de ProjetosI** | Gabriel Santos |
+| **Design UX/UI** | Ana Carolina da Silva Santos |
+| **Dev Front-End** | Pedro Juan Pereira dos Santos |
+| **Dev Back-End / Banco de Dados** | Muriel Bezerra da Silva |
+| **Pesquisa / QA** | Edmael Paulo Ribeiro Barreto |
+| **Pesquisa** | Wanderson Phillype Felix Pereira |
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+## 🚀 Como Executar o Projeto
 
-## Join the community
+### Pré-requisitos
+* Node.js (v16 ou superior)
+* NPM ou Yarn
+* MongoDB rodando localmente ou via Atlas
 
-Join our community of developers creating universal apps.
+### Passos
+1.  **Clone o repositório:**
+    ```bash
+    git clone [https://github.com/PedroJuanDEV/SireneMobiel.git](https://github.com/PedroJuanDEV/SireneMobiel.git)
+    cd SireneMobiel
+    ```
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+2.  **Instale as dependências:**
+    ```bash
+    npm install
+    ```
+
+3.  **Configure as variáveis de ambiente:**
+    Crie um arquivo `.env` na raiz baseado no `.env.example`.
+
+4.  **Execute o projeto em modo de desenvolvimento:**
+    ```bash
+    npm run dev
+    ```
+
+## 📄 Licença
+
+Desenvolvido para fins acadêmicos na Faculdade Senac Pernambuco - 2025.
