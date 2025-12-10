@@ -11,7 +11,7 @@ O principal objetivo é padronizar a coleta de dados em campo, garantindo agilid
 
 ## 📱 Funcionalidades (App Mobile)
 
-O aplicativo de campo foi projetado com foco na usabilidade para os operadores (Tenentes e Soldados):
+O aplicativo de campo foi projetado com foco na usabilidade para os operadores:
 
 * **Autenticação Segura:** Login com credenciais institucionais e perfis de acesso (Operador, Chefe, Admin).
 * **Registro de Ocorrências:** Formulário padronizado com validação de campos obrigatórios.
